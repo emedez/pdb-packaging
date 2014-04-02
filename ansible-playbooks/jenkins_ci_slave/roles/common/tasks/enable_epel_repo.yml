@@ -1,0 +1,22 @@
+---
+
+# enable EPEL repository on CentOS 6
+- name: enable EPEL repository
+  shell:
+    wget -N http://dl.fedoraproject.org/pub/epel/6/{{ ansible_architecture }}/epel-release-6-8.noarch.rpm &&
+    rpm -Uvh epel-release-6-8.noarch.rpm &&
+    touch ~/.ansible/enable_epel_repo
+    creates=~/.ansible/enable_epel_repo
+  ignore_errors: yes
+  when: ansible_distribution == "CentOS" and ansible_lsb.major_release|int >= 6
+
+# enable EPEL repository on CentOS 5
+- name: enable EPEL repository
+  shell:
+    wget -N http://dl.fedoraproject.org/pub/epel/5/{{ ansible_architecture }}/epel-release-5-4.noarch.rpm &&
+    rpm -Uvh epel-release-5-4.noarch.rpm &&
+    touch ~/.ansible/enable_epel_repo
+    creates=~/.ansible/enable_epel_repo
+  ignore_errors: yes
+  when: ansible_distribution == "CentOS" and ansible_lsb.major_release|int < 6
+

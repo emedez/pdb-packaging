@@ -1,0 +1,7 @@
+---
+
+- include: setup_mock.yml
+  when: ansible_distribution == "CentOS"
+
+- include: setup_pbuilder.yml
+  when: ansible_distribution == "Ubuntu"

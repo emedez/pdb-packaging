@@ -1,0 +1,47 @@
+---
+  #
+  # Configure a Jenkins CI slave with Fedora mock utility.
+  #
+
+  - name: Install required packages for Jenkins CI slave
+    yum: pkg=$item state=installed
+    with_items:
+      - libselinux-python
+      - java-1.6.0-openjdk
+      - git
+      - mercurial
+
+    when: ansible_distribution == "CentOS"
+
+  - name: Create wheel group
+    group: name=wheel
+
+  - name: Create jenkins user
+    user: name={{ jenkins_user }} append=yes groups=wheel
+
+  - name: Create .ssh directory
+    file: dest=/home/{{ jenkins_user }}/.ssh owner={{ jenkins_user }}
+          group={{ jenkins_user }} state=directory mode=0700
+
+  - name: Copy root's authorized_keys
+    shell:
+      cp /root/.ssh/authorized_keys /home/{{ jenkins_user }}/.ssh/authorized_keys &&
+      chown -R {{ jenkins_user }}:{{ jenkins_user }} /home/{{ jenkins_user }}/.ssh &&
+      chmod 700 /home/{{ jenkins_user }}/.ssh &&
+      chmod 600 /home/{{ jenkins_user }}/.ssh/authorized_keys &&
+      touch ~/.ansible/copy-root-authorized-keys
+      creates=~/.ansible/copy-root-authorized-keys
+
+  - name: Add entry to /etc/sudoers.d/
+    template: src=templates/01_sudoers_default_overrides.j2 dest=/etc/sudoers.d/01_sudoers_default_overrides
+    when: ansible_distribution == "CentOS" and ansible_distribution_version|float >= 6.0
+
+  - name: Set /etc/sudoers.d/01_sudoers_default_overrides attributes
+    file: dest=/etc/sudoers.d/01_sudoers_default_overrides owner=root group=root mode=0440
+    when: ansible_distribution == "CentOS" and ansible_distribution_version|float >= 6.0
+
+  - name: Create /var/jenkins directories
+    file: dest=$item owner={{ jenkins_user }} group={{ jenkins_user }} state=directory
+    with_items:
+      - /var/jenkins
+      - /var/jenkins/workspace

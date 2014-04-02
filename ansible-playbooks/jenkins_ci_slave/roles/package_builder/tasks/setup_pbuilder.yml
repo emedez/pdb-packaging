@@ -1,0 +1,33 @@
+---
+#
+# Setup package building box that uses pbuilder.
+#
+
+- name: install required packages for building packages
+  apt: pkg={{ item }}
+  with_items:
+    - devscripts
+    - pbuilder
+    - git-buildpackage
+    - dh-make
+    - apt-utils
+    - python-setuptools
+  when: ansible_distribution == "Ubuntu"
+
+- name: create ~/.pbuilderrc
+  template: src=pbuilderrc dest=/home/{{ jenkins_user }}/.pbuilderrc
+  when: ansible_distribution == "Ubuntu"
+
+- name: set .pbuilderrc attributes
+  file: dest=/home/{{ jenkins_user }}/.pbuilderrc owner={{ jenkins_user }} group={{ jenkins_user }}
+  when: ansible_distribution == "Ubuntu"
+
+- name: create environment to build packages for precise/amd64
+  sudo: yes
+  sudo_user: "{{ jenkins_user }}"
+  shell:
+    sudo DIST=precise ARCH=amd64 pbuilder create &&
+    mkdir -p ~/.ansible &&
+    touch ~/.ansible/pbuilder-create-precise-amd64
+    creates=~/.ansible/pbuilder-create-precise-amd64
+  when: ansible_distribution == "Ubuntu"

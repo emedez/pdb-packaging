@@ -1,0 +1,6 @@
+---
+  # Create this folder, we will store files here as a way to make
+  # some tasks idempotent.
+  - name: Create ~/.ansible dir
+    shell: mkdir -p ~/.ansible
+    ignore_errors: yes

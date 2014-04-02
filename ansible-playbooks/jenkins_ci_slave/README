@@ -1,0 +1,13 @@
+README
+======
+
+These are ansible playbooks for preparing a Jenkins CI slave, which is
+used for building RPM and/or Debian packages.
+
+
+USAGE
+=====
+
+
+To run playbook:
+$ ansible-playbook -i hosts setup_jenkins_ci_slave_rpm_builder.yml

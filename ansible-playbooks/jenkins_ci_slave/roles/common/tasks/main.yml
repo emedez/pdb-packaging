@@ -1,0 +1,42 @@
+---
+
+# Create this folder, we will store files here as a way to make
+# some tasks idempotent.
+- name: create ~/.ansible dir
+  shell: mkdir -p ~/.ansible
+  ignore_errors: yes
+
+- name: apt-get update
+  apt: update_cache=yes
+  when: ansible_distribution == "Ubuntu"
+
+- name: install wget
+  yum: name=wget
+  when: ansible_distribution == "CentOS"
+
+- name: install wget
+  apt: pkg=wget
+  when: ansible_distribution == "Ubuntu"
+
+- include: enable_epel_repo.yml
+
+- name: disable iptables
+  service: name=iptables state=stopped enabled=no
+  when: ansible_distribution == "CentOS" and ansible_lsb.major_release|int >= 6
+
+- name: install required packages for Jenkins CI slave
+  yum: name={{ item }}
+  with_items:
+    - libselinux-python
+    - java-1.6.0-openjdk
+    - git
+    - mercurial
+  when: ansible_distribution == "CentOS"
+
+- name: install required packages for Jenkins CI slave
+  apt: pkg={{ item }}
+  with_items:
+    - openjdk-6-jdk
+    - git
+    - mercurial
+  when: ansible_distribution == "Ubuntu"

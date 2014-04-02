@@ -1,0 +1,46 @@
+---
+  #
+  # Configure Fedora mock utility.
+  #
+
+  - name: Install required packages for RPM package building.
+    yum: pkg=$item state=installed
+    with_items:
+      - mock
+      - rpm-build
+    when: ansible_distribution == "CentOS"
+
+  - name: Configure global environment settings.
+    template: src=templates/mock.sh.j2 dest=/etc/profile.d/mock.sh
+    when: ansible_distribution == "CentOS"
+
+  - name: Configure global environment settings.
+    file: dest=/etc/profile.d/mock.sh owner=root group=root mode=0775
+    when: ansible_distribution == "CentOS"
+
+  - name: Create buildroot for packaging.
+    shell:
+      mkdir /etc/skel/packages &&
+      cd /etc/skel/packages &&
+      mkdir -p buildroot.clean/{RPMS,SRPMS,SPECS,BUILD,SOURCES}  &&
+      touch ~/.ansible/create-buildroot
+      creates=~/.ansible/create-buildroot
+
+  - name: Create RPM macros file.
+    template: src=templates/rpmmacros.j2 dest=/etc/skel/.rpmmacros
+
+  - name: Set .rpmmacros properties
+    file: dest=/etc/skel/.rpmmacros owner=root group=root mode=0644
+    when: ansible_distribution == "CentOS"
+
+  - name: Modify user
+    shell:
+      usermod -aG mock {{ jenkins_user }} &&
+      sudo -u {{ jenkins_user }} cp -a /etc/skel/packages /home/{{ jenkins_user }} &&
+      sudo -u {{ jenkins_user }} cp -a /etc/skel/.rpmmacros /home/{{ jenkins_user }} &&
+      touch ~/.ansible/modify-user
+      creates=~/.ansible/modify-user
+
+  - name: Add mock target config file for CentOS 6-x86_64-EPEL-IUS-PDB
+    template: src=templates/mock/centos-6-x86_64-epel-ius-pdb.cfg.j2 dest=/etc/mock/centos-6-x86_64-epel-ius-pdb.cfg
+

@@ -1,0 +1,31 @@
+---
+  #
+  # Configure a Jenkins CI slave with Fedora mock utility.
+  #
+
+- name: create wheel group
+  group: name=wheel
+
+- name: create jenkins user
+  user: name={{ jenkins_user }} append=yes groups=wheel
+
+- name: create .ssh directory
+  file: dest=/home/{{ jenkins_user }}/.ssh owner={{ jenkins_user }}
+        group={{ jenkins_user }} state=directory mode=0700
+
+- name: add authorized key
+  authorized_key: user={{ jenkins_user }} key="{{ item }}"
+  with_file:
+    - ../../../public_keys/tools-sg-key.pub
+
+- name: add entry to /etc/sudoers.d/
+  template: src=100_jenkins dest=/etc/sudoers.d/100_jenkins
+
+- name: set /etc/sudoers.d/100_jenkins attributes
+  file: dest=/etc/sudoers.d/100_jenkins owner=root group=root mode=0440
+
+- name: Create /var/jenkins directories
+  file: dest={{ item }} owner={{ jenkins_user }} group={{ jenkins_user }} state=directory
+  with_items:
+    - /var/jenkins
+    - /var/jenkins/workspace

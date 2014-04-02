@@ -1,0 +1,52 @@
+---
+#
+# Setup a package building box that uses mock.
+#
+
+- name: install required packages for RPM package building
+  yum: name=$item
+  with_items:
+    - mock
+    - rpm-build
+  when: ansible_distribution == "CentOS"
+
+- name: install mock.sh
+  template: src=mock.sh dest=/etc/profile.d/mock.sh
+  when: ansible_distribution == "CentOS"
+
+- name: set mock.sh attributes
+  file: dest=/etc/profile.d/mock.sh owner=root group=root mode=0775
+  when: ansible_distribution == "CentOS"
+
+- name: create buildroot for packaging
+  shell:
+    mkdir /etc/skel/packages &&
+    cd /etc/skel/packages &&
+    mkdir -p buildroot.clean/{RPMS,SRPMS,SPECS,BUILD,SOURCES}  &&
+    touch ~/.ansible/create-buildroot
+    creates=~/.ansible/create-buildroot
+  when: ansible_distribution == "CentOS"
+
+- name: create RPM macros file
+  template: src=rpmmacros dest=/etc/skel/.rpmmacros
+  when: ansible_distribution == "CentOS"
+
+- name: set .rpmmacros attributes
+  file: dest=/etc/skel/.rpmmacros owner=root group=root mode=0644
+  when: ansible_distribution == "CentOS"
+
+- name: modify user
+  shell:
+    usermod -aG mock {{ jenkins_user }} &&
+    sudo -u {{ jenkins_user }} cp -a /etc/skel/packages /home/{{ jenkins_user }} &&
+    sudo -u {{ jenkins_user }} cp -a /etc/skel/.rpmmacros /home/{{ jenkins_user }} &&
+    touch ~/.ansible/modify-user
+    creates=~/.ansible/modify-user
+  when: ansible_distribution == "CentOS"
+
+- name: add mock target config files
+  template: src={{ item.src }} dest={{ item.dest }}
+  with_items:
+    - { src: 'centos-5-x86_64-epel-ius-pdb.cfg', dest: '/etc/mock/centos-5-x86_64-epel-ius-pdb.cfg' }
+    - { src: 'centos-6-x86_64-epel-ius-pdb.cfg', dest: '/etc/mock/centos-6-x86_64-epel-ius-pdb.cfg' }
+  when: ansible_distribution == "CentOS"

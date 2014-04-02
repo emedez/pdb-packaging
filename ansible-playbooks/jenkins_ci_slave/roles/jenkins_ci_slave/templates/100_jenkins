@@ -1,0 +1,5 @@
+%wheel	ALL=(ALL) NOPASSWD: ALL
+
+Defaults:%wheel !requiretty
+
+Defaults:jenkins !requiretty

@@ -1,0 +1,2 @@
+To run playbook:
+$ ansible-playbook -i builders setup_jenkins_ci_slave_rpm_builder.yml

@@ -1,0 +1,10 @@
+---
+- hosts: package_builders
+  sudo: yes
+  vars_files:
+    - vars.yml
+  roles:
+    - common
+    - jenkins_ci_slave
+    - package_builder
+

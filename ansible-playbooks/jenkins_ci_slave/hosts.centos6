@@ -1,0 +1,2 @@
+[package_builders]
+ubuntu1204 ansible_ssh_host=ec2-54-254-62-245.ap-southeast-1.compute.amazonaws.com ansible_ssh_private_key_file=/home/tools/.ssh/tools-sg-key.pem ansible_ssh_user=ubuntu

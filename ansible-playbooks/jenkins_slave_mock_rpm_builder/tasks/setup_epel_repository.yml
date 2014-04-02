@@ -1,0 +1,13 @@
+---
+  - name: Install wget.
+    yum: name=wget state=installed
+    when: ansible_distribution == "CentOS"
+
+  - name: Setup EPEL repository.
+    shell:
+      wget -N http://dl.fedoraproject.org/pub/epel/6/`uname -i`/epel-release-6-8.noarch.rpm &&
+      rpm -Uvh epel-release-6-8.noarch.rpm &&
+      touch ~/.ansible/setup-epel-repo
+      creates=~/.ansible/setup-epel-repo
+    ignore_errors: yes
+    when: ansible_distribution == "CentOS" and ansible_distribution_version|float >= 6.0

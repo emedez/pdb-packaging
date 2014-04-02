@@ -1,0 +1,13 @@
+---
+- hosts: builders
+  sudo: yes
+  vars_files:
+    - vars.yml
+  tasks:
+    - include: tasks/setup_home_ansible_dir.yml
+    - include: tasks/setup_epel_repository.yml
+    - include: tasks/disable_iptables.yml
+    - include: tasks/setup_jenkins_ci_slave_rpmbuilder.yml
+    - include: tasks/setup_fedora_mock_utility.yml
+
+
